@@ -9,16 +9,18 @@ export default async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   try {
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       payment_method_types: ['card'],
       mode: 'subscription',
       customer_email: email,
-      client_reference_id: refCode || null,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `https://revmetrics.vercel.app/?status=success`,
       cancel_url: `https://revmetrics.vercel.app/?status=cancelled`,
-    });
+    };
 
+    if (refCode) sessionParams.client_reference_id = refCode;
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
     res.status(200).json({ url: session.url });
   } catch (err) {
     console.error('Checkout session error:', err);
