@@ -81,22 +81,14 @@ function scoreDeals(market,asked,condition,mileage,year){
 }
 
 async function redirectToCheckout(priceId,email,refCode){
-  if(!window.Stripe){
-    await new Promise((res,rej)=>{
-      const s=document.createElement("script");
-      s.src="https://js.stripe.com/v3/";s.onload=res;s.onerror=rej;
-      document.head.appendChild(s);
-    });
-  }
-  const stripe=window.Stripe(STRIPE_PK);
-  await stripe.redirectToCheckout({
-    lineItems:[{price:priceId,quantity:1}],
-    mode:"subscription",
-    customerEmail:email,
-    successUrl:window.location.origin+"?session=success",
-    cancelUrl:window.location.origin+"?session=cancel",
-    clientReferenceId:refCode||undefined,
+  const res=await fetch('/api/create-checkout-session',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({priceId,email,refCode})
   });
+  const data=await res.json();
+  if(data.url) window.location.href=data.url;
+  else throw new Error(data.error||'Failed to create checkout session');
 }
 
 function Tag({children,color}){return <span style={{background:color+"22",color,border:`1px solid ${color}44`,borderRadius:6,padding:"2px 10px",fontSize:12,fontWeight:700}}>{children}</span>;}
