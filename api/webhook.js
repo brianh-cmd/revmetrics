@@ -20,15 +20,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: err.message });
   }
 
+  console.log('Webhook event type:', event.type);
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const email = session.customer_email;
-    const priceId = session.line_items?.data?.[0]?.price?.id;
-    const plan = priceId === process.env.REACT_APP_STRIPE_ANNUAL ? 'annual' : 'monthly';
     const referralCode = session.client_reference_id;
 
+    // Retrieve full session with line items expanded
+    const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ['line_items'],
+    });
+
+    const priceId = fullSession.line_items?.data?.[0]?.price?.id;
+    console.log('priceId:', priceId);
+    console.log('ANNUAL price:', process.env.REACT_APP_STRIPE_ANNUAL);
+    const plan = priceId === process.env.REACT_APP_STRIPE_ANNUAL ? 'annual' : 'monthly';
+    console.log('Plan:', plan, 'Email:', email);
+
     try {
-      await fetch(
+      const updateRes = await fetch(
         `${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(email)}`,
         {
           method: 'PATCH',
@@ -45,6 +56,8 @@ export default async function handler(req, res) {
           })
         }
       );
+      const updateData = await updateRes.json();
+      console.log('Supabase update result:', JSON.stringify(updateData));
 
       if (referralCode) {
         await fetch(
