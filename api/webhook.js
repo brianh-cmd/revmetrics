@@ -1,3 +1,5 @@
+import Stripe from 'stripe';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -5,13 +7,12 @@ export default async function handler(req, res) {
 
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const stripeSecret = process.env.STRIPE_SECRET_KEY;
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
   let event;
   try {
-    const stripe = require('stripe')(stripeSecret);
     const rawBody = await getRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
@@ -27,8 +28,7 @@ export default async function handler(req, res) {
     const referralCode = session.client_reference_id;
 
     try {
-      // Update user plan in Supabase
-      const updateRes = await fetch(
+      await fetch(
         `${supabaseUrl}/rest/v1/profiles?email=eq.${encodeURIComponent(email)}`,
         {
           method: 'PATCH',
@@ -46,7 +46,6 @@ export default async function handler(req, res) {
         }
       );
 
-      // Handle referral credit
       if (referralCode) {
         await fetch(
           `${supabaseUrl}/rest/v1/profiles?referral_code=eq.${referralCode}`,
