@@ -572,6 +572,8 @@ function App({session}){
                     <div key={k} style={{background:C.surface,borderRadius:10,padding:"10px 12px"}}><div style={{fontSize:10,color:C.muted,textTransform:"uppercase",letterSpacing:.8}}>{k}</div><div style={{fontSize:14,fontWeight:700,marginTop:4}}>{v}</div></div>
                   ))}
                 </div>
+              {liveLoading&&<div style={{marginTop:8,padding:"10px 12px",background:C.surface,borderRadius:10,fontSize:12,color:C.muted}}>🔍 Fetching live market data...</div>}
+              {liveMarket?.found&&<div style={{marginTop:8,background:C.green+"11",border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 12px"}}><div style={{fontSize:10,color:C.green,textTransform:"uppercase",letterSpacing:.8,fontWeight:700}}>Live Listings ({liveMarket.count} active)</div><div style={{fontSize:13,fontWeight:700,marginTop:4,color:C.text}}>${liveMarket.low?.toLocaleString()} — ${liveMarket.high?.toLocaleString()} <span style={{color:C.muted,fontWeight:400}}>avg ${liveMarket.avg?.toLocaleString()}</span></div></div>}
                 <div style={{marginTop:12,background:C.accent+"11",border:`1px solid ${C.accent}33`,borderRadius:10,padding:"10px 14px",fontSize:12,color:C.accent}}>
                   💡 Supply for {vehicle} is <strong>{MARKET_DATA[vehicle]?.supply}</strong> — {["Very Low","Low"].includes(MARKET_DATA[vehicle]?.supply)?"don't wait if the price is right.":"you have negotiating room."}
                   <a href={batLink(vehicle)} target="_blank" rel="noopener noreferrer"
