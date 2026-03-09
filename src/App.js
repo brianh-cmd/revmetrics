@@ -513,6 +513,8 @@ function App({session}){
   const [compDone,setCD]=useState(false);const [copied,setCopied]=useState(false);
   const [loadingComps,setLC]=useState(false);
   const [scorerSubmitted,setScorerSubmitted]=useState(false);
+  const [liveMarket,setLiveMarket]=useState(null);
+  const [liveLoading,setLiveLoading]=useState(false);
   const refLink=`${window.location.origin}?ref=${profile?.referral_code||""}`;
   useEffect(()=>{if(tab==="comps")loadComps();},[tab]);
   async function loadComps(){setLC(true);try{const d=await sb.getComps(token);setComps(d||[]);}catch(e){console.error(e);}setLC(false);}
@@ -522,7 +524,18 @@ function App({session}){
     setCF({vehicle:"",year:"",price:"",condition:"",mileage:"",location:""});setCD(true);setTimeout(()=>setCD(false),3000);loadComps();}
     catch(e){alert("Error: "+e.message);}
   }
-  function runScorer(){if(!vehicle||!condition||!mileage||!price||!year)return;setResult(scoreDeals(MARKET_DATA[vehicle],parseFloat(price.replace(/,/g,"")),condition,mileage,year));}
+  async function runScorer(){
+    if(!vehicle||!condition||!mileage||!price||!year)return;
+    setResult(scoreDeals(MARKET_DATA[vehicle],parseFloat(price.replace(/,/g,"")),condition,mileage,year));
+    setLiveMarket(null);
+    setLiveLoading(true);
+    try{
+      const r=await fetch('/api/market-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vehicle,year})});
+      const d=await r.json();
+      if(d.found)setLiveMarket(d);
+    }catch(e){console.error('live price error',e);}
+    setLiveLoading(false);
+  }
   function copyRef(){navigator.clipboard.writeText(refLink).catch(()=>{});setCopied(true);setTimeout(()=>setCopied(false),2500);}
   const tabs=[{id:"scorer",label:"Scorer"},{id:"market",label:"Market"},{id:"comps",label:"Comps"},{id:"referral",label:"Refer"},{id:"account",label:"Account"}];
   return(
