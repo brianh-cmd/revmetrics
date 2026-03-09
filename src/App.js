@@ -177,16 +177,63 @@ const MARKET_DATA = {
   "Ranger 521":               {base:28000, trend:4.2,  supply:"Low",      hot:false},
   "Skeeter ZX190":            {base:18000, trend:3.8,  supply:"Medium",   hot:false},
 
-  "Porsche 911":          {base:95000,trend:8.2, supply:"Low",     hot:true },
-  "Honda S2000":          {base:28500,trend:12.4,supply:"Very Low",hot:true },
-  "BMW M3":               {base:42000,trend:3.1, supply:"Medium",  hot:false},
-  "Toyota Supra (A80)":   {base:52000,trend:15.7,supply:"Very Low",hot:true },
-  "Mitsubishi Evo":       {base:31000,trend:9.8, supply:"Low",     hot:true },
-  "Subaru STI":           {base:24000,trend:5.2, supply:"Medium",  hot:false},
-  "Toyota Land Cruiser":  {base:48000,trend:11.3,supply:"Low",     hot:true },
-  "Ford Bronco":          {base:52000,trend:2.1, supply:"High",    hot:false},
-  "Acura NSX (NA1)":      {base:88000,trend:18.2,supply:"Very Low",hot:true },
-  "BMW M5":               {base:38000,trend:4.4, supply:"Medium",  hot:false},
+  "Porsche 911 (964)":     {base:82000, trend:6.1,  supply:"Low",      hot:true,  bat:"964+911"},
+  "Porsche 911 (993)":     {base:105000,trend:7.4,  supply:"Low",      hot:true,  bat:"993+911"},
+  "Porsche 911 (996)":     {base:38000, trend:4.2,  supply:"Medium",   hot:false, bat:"996+911"},
+  "Porsche 911 (997)":     {base:62000, trend:5.8,  supply:"Medium",   hot:true,  bat:"997+911"},
+  "Porsche 944":           {base:18000, trend:6.2,  supply:"Medium",   hot:false, bat:"porsche+944"},
+  "Porsche 928":           {base:22000, trend:5.4,  supply:"Low",      hot:false, bat:"porsche+928"},
+  "Porsche Boxster (986)": {base:14000, trend:4.8,  supply:"Medium",   hot:false, bat:"boxster+986"},
+  "Honda S2000":           {base:32000, trend:14.2, supply:"Very Low", hot:true,  bat:"honda+s2000"},
+  "Honda NSX (NA1)":       {base:92000, trend:19.5, supply:"Very Low", hot:true,  bat:"honda+nsx"},
+  "Honda Civic Type R (EK9)":{base:28000,trend:18.1,supply:"Very Low", hot:true,  bat:"civic+type+r"},
+  "Honda CRX Si":          {base:14000, trend:9.2,  supply:"Low",      hot:true,  bat:"honda+crx"},
+  "BMW E30 M3":            {base:72000, trend:5.1,  supply:"Very Low", hot:true,  bat:"e30+m3"},
+  "BMW E46 M3":            {base:28000, trend:8.4,  supply:"Low",      hot:true,  bat:"e46+m3"},
+  "BMW E92 M3":            {base:32000, trend:6.2,  supply:"Medium",   hot:false, bat:"e92+m3"},
+  "BMW M5 (E39)":          {base:24000, trend:9.8,  supply:"Low",      hot:true,  bat:"e39+m5"},
+  "BMW M5 (E60)":          {base:18000, trend:5.2,  supply:"Medium",   hot:false, bat:"e60+m5"},
+  "BMW 2002":              {base:22000, trend:4.8,  supply:"Low",      hot:false, bat:"bmw+2002"},
+  "BMW 3.0 CSL":           {base:185000,trend:3.2,  supply:"Very Low", hot:false, bat:"bmw+3.0+csl"},
+  "Toyota Supra (A80)":    {base:68000, trend:16.2, supply:"Very Low", hot:true,  bat:"toyota+supra+a80"},
+  "Toyota Supra (A70)":    {base:22000, trend:9.4,  supply:"Low",      hot:true,  bat:"toyota+supra+a70"},
+  "Toyota Land Cruiser (FJ40)":{base:58000,trend:12.1,supply:"Low",   hot:true,  bat:"fj40"},
+  "Toyota Land Cruiser (80 Series)":{base:42000,trend:14.8,supply:"Low",hot:true,bat:"land+cruiser+80"},
+  "Toyota MR2 (AW11)":     {base:14000, trend:11.2, supply:"Low",      hot:true,  bat:"mr2+aw11"},
+  "Toyota MR2 (SW20)":     {base:18000, trend:13.4, supply:"Low",      hot:true,  bat:"mr2+sw20"},
+  "Mitsubishi Evo VIII":   {base:34000, trend:11.2, supply:"Low",      hot:true,  bat:"evo+viii"},
+  "Mitsubishi Evo IX":     {base:38000, trend:12.8, supply:"Low",      hot:true,  bat:"evo+ix"},
+  "Subaru WRX STI (GD)":   {base:26000, trend:7.4,  supply:"Medium",   hot:false, bat:"subaru+sti"},
+  "Subaru WRX STI (GR)":   {base:22000, trend:5.8,  supply:"Medium",   hot:false, bat:"subaru+sti+gr"},
+  "Ford Bronco (Early)":   {base:62000, trend:8.4,  supply:"Low",      hot:true,  bat:"early+bronco"},
+  "Ford Mustang Boss 302": {base:48000, trend:5.2,  supply:"Low",      hot:false, bat:"mustang+boss+302"},
+  "Ford Mustang GT350":    {base:82000, trend:6.8,  supply:"Low",      hot:true,  bat:"mustang+gt350"},
+  "Ford GT40":             {base:420000,trend:3.1,  supply:"Very Low", hot:false, bat:"ford+gt40"},
+  "Chevrolet Corvette C2": {base:62000, trend:4.8,  supply:"Low",      hot:false, bat:"corvette+c2"},
+  "Chevrolet Corvette C3": {base:28000, trend:3.8,  supply:"Medium",   hot:false, bat:"corvette+c3"},
+  "Chevrolet Camaro Z28":  {base:38000, trend:4.2,  supply:"Low",      hot:false, bat:"camaro+z28"},
+  "Dodge Viper GTS":       {base:52000, trend:7.8,  supply:"Low",      hot:true,  bat:"viper+gts"},
+  "Ferrari 308":           {base:58000, trend:5.4,  supply:"Low",      hot:false, bat:"ferrari+308"},
+  "Ferrari 328":           {base:82000, trend:6.2,  supply:"Low",      hot:true,  bat:"ferrari+328"},
+  "Ferrari 348":           {base:48000, trend:4.8,  supply:"Low",      hot:false, bat:"ferrari+348"},
+  "Ferrari F355":          {base:92000, trend:7.4,  supply:"Low",      hot:true,  bat:"ferrari+f355"},
+  "Ferrari 456":           {base:62000, trend:3.8,  supply:"Low",      hot:false, bat:"ferrari+456"},
+  "Lamborghini Countach":  {base:380000,trend:4.2,  supply:"Very Low", hot:false, bat:"lamborghini+countach"},
+  "Lamborghini Diablo":    {base:220000,trend:5.8,  supply:"Very Low", hot:true,  bat:"lamborghini+diablo"},
+  "Mercedes 300SL Gullwing":{base:920000,trend:2.8, supply:"Very Low", hot:false, bat:"300sl+gullwing"},
+  "Mercedes 280SL (Pagoda)":{base:68000,trend:5.2,  supply:"Low",      hot:false, bat:"mercedes+280sl"},
+  "Mercedes 190E 2.3-16":  {base:28000, trend:8.4,  supply:"Low",      hot:true,  bat:"190e+2.3-16"},
+  "Alfa Romeo Spider":     {base:18000, trend:5.8,  supply:"Medium",   hot:false, bat:"alfa+romeo+spider"},
+  "Alfa Romeo GTV6":       {base:14000, trend:6.2,  supply:"Low",      hot:false, bat:"alfa+gtv6"},
+  "Lancia Delta Integrale":{base:58000, trend:12.4, supply:"Very Low", hot:true,  bat:"lancia+delta+integrale"},
+  "Mazda RX-7 (FC)":       {base:16000, trend:10.2, supply:"Low",      hot:true,  bat:"rx7+fc"},
+  "Mazda RX-7 (FD)":       {base:38000, trend:18.4, supply:"Very Low", hot:true,  bat:"rx7+fd"},
+  "Mazda Miata (NA)":      {base:14000, trend:8.8,  supply:"Medium",   hot:true,  bat:"miata+na"},
+  "Nissan Skyline GT-R (R32)":{base:42000,trend:22.4,supply:"Very Low",hot:true,  bat:"r32+gtr"},
+  "Nissan Skyline GT-R (R33)":{base:52000,trend:18.2,supply:"Very Low",hot:true,  bat:"r33+gtr"},
+  "Nissan Skyline GT-R (R34)":{base:85000,trend:24.8,supply:"Very Low",hot:true,  bat:"r34+gtr"},
+  "Nissan 240SX":          {base:14000, trend:12.4, supply:"Low",      hot:true,  bat:"nissan+240sx"},
+  "Nissan 300ZX (Z32)":    {base:22000, trend:9.8,  supply:"Low",      hot:true,  bat:"300zx+z32"},
 };
 const CONDITIONS    = ["Concours","Excellent","Good","Fair","Project"];
 const COND_MULT     = {Concours:1.35,Excellent:1.15,Good:1.0,Fair:0.78,Project:0.52};
@@ -242,6 +289,12 @@ function scoreDeals(market,asked,condition,mileage,year){
   else if(diff>=-12){score=35;label="Overpriced";color=C.yellow;summary="Above market. Negotiate down."}
   else{score=12;label="Walk Away";color=C.red;summary="Significantly overpriced. Better deals exist."}
   return{score,label,color,fair:Math.round(fair),diff:Math.round(diff),summary};
+}
+
+function batLink(vehicleName) {
+  const d = (typeof MARKET_DATA !== "undefined" ? MARKET_DATA : {})[vehicleName];
+  const query = d?.bat || vehicleName.toLowerCase().replace(/[^a-z0-9]+/g, "+");
+  return `https://bringatrailer.com/search/?s=${query}#listing-results`;
 }
 
 async function redirectToCheckout(priceId,email,refCode){
@@ -508,7 +561,18 @@ function App({session}){
                 </div>
                 <div style={{marginTop:12,background:C.accent+"11",border:`1px solid ${C.accent}33`,borderRadius:10,padding:"10px 14px",fontSize:12,color:C.accent}}>
                   💡 Supply for {vehicle} is <strong>{MARKET_DATA[vehicle]?.supply}</strong> — {["Very Low","Low"].includes(MARKET_DATA[vehicle]?.supply)?"don't wait if the price is right.":"you have negotiating room."}
+                  <a href={batLink(vehicle)} target="_blank" rel="noopener noreferrer"
+                    style={{display:"block",marginTop:6,color:C.accent,fontSize:11,opacity:0.75,textDecoration:"underline"}}>
+                    View recent BaT sold listings →
+                  </a>
                 </div>
+                <a href={batLink(vehicle)} target="_blank" rel="noopener noreferrer"
+                  style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:10,
+                    background:"transparent",border:`1px solid ${C.accent}`,borderRadius:10,
+                    padding:"12px 14px",color:C.accent,fontSize:13,fontWeight:700,textDecoration:"none",
+                    letterSpacing:.3}}>
+                  🔨 See Real Sold Comps on Bring a Trailer
+                </a>
               </div>
             )}
           </div>
