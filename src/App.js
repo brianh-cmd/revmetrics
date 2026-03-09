@@ -351,7 +351,7 @@ function VehicleSearch({label, value, onChange, options, error=false}) {
     setQuery(v);
     setOpen(true);
     setHighlighted(0);
-    if (v === "") onChange("");
+    onChange(v);
   }
 
   return (
@@ -513,6 +513,8 @@ function App({session}){
   const [compDone,setCD]=useState(false);const [copied,setCopied]=useState(false);
   const [loadingComps,setLC]=useState(false);
   const [scorerSubmitted,setScorerSubmitted]=useState(false);
+  const [liveMarket,setLiveMarket]=useState(null);
+  const [liveLoading,setLiveLoading]=useState(false);
   const refLink=`${window.location.origin}?ref=${profile?.referral_code||""}`;
   useEffect(()=>{if(tab==="comps")loadComps();},[tab]);
   async function loadComps(){setLC(true);try{const d=await sb.getComps(token);setComps(d||[]);}catch(e){console.error(e);}setLC(false);}
@@ -522,7 +524,45 @@ function App({session}){
     setCF({vehicle:"",year:"",price:"",condition:"",mileage:"",location:""});setCD(true);setTimeout(()=>setCD(false),3000);loadComps();}
     catch(e){alert("Error: "+e.message);}
   }
-  function runScorer(){if(!vehicle||!condition||!mileage||!price||!year)return;setResult(scoreDeals(MARKET_DATA[vehicle],parseFloat(price.replace(/,/g,"")),condition,mileage,year));}
+  async function runScorer(){
+    if(!vehicle||!condition||!mileage||!price||!year) return;
+    const asked = parseFloat(price.replace(/,/g,""));
+    setLiveMarket(null);
+    if(MARKET_DATA[vehicle]){
+      setResult(scoreDeals(MARKET_DATA[vehicle],asked,condition,mileage,year));
+    } else {
+      // Unknown vehicle — fetch live MarketCheck data
+      setLiveLoading(true);
+      setResult(null);
+      try {
+        const parts = vehicle.trim().split(/\s+/);
+        const make = parts[0];
+        const model = parts.slice(1).join(' ') || parts[0];
+        const r = await fetch('/api/market-price', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({make, model, year})
+        });
+        const data = await r.json();
+        setLiveMarket(data);
+        if(data.found && data.median){
+          const syntheticMarket = {
+            base: data.median,
+            trend: 2.0,
+            supply: data.count > 10 ? 'Medium' : data.count > 4 ? 'Low' : 'Very Low',
+            hot: false,
+          };
+          setResult(scoreDeals(syntheticMarket, asked, condition, mileage, year));
+        } else {
+          setResult({noData:true});
+        }
+      } catch(e) {
+        console.error(e);
+        setResult({noData:true});
+      }
+      setLiveLoading(false);
+    }
+  }
   function copyRef(){navigator.clipboard.writeText(refLink).catch(()=>{});setCopied(true);setTimeout(()=>setCopied(false),2500);}
   const tabs=[{id:"scorer",label:"Scorer"},{id:"market",label:"Market"},{id:"comps",label:"Comps"},{id:"referral",label:"Refer"},{id:"account",label:"Account"}];
   return(
@@ -548,13 +588,35 @@ function App({session}){
             <Sel label="Condition" value={condition} onChange={setCond} options={CONDITIONS}/>
             <Sel label="Mileage" value={mileage} onChange={setMile} options={MILE_BRACKETS}/>
             <Btn onClick={runScorer} disabled={!vehicle||!condition||!mileage||!price||!year}>SCORE THIS DEAL →</Btn>
-            {result&&(
+            {result&&result.noData&&(
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:24,textAlign:"center"}}>
+                <div style={{fontSize:32,marginBottom:12}}>📊</div>
+                <div style={{fontSize:16,fontWeight:800,marginBottom:8}}>Not Enough Auction Data</div>
+                <div style={{fontSize:13,color:C.muted,marginBottom:16}}>This vehicle doesn't appear frequently on collector auction platforms. Try searching on a general marketplace instead.</div>
+                <a href={`https://www.cars.com/shopping/results/?keyword=${encodeURIComponent(vehicle)}`} target="_blank" rel="noopener noreferrer"
+                  style={{display:"inline-block",background:C.accent,color:C.bg,borderRadius:10,padding:"10px 20px",fontWeight:800,fontSize:13,textDecoration:"none"}}>
+                  Search on Cars.com →
+                </a>
+              </div>
+            )}
+            {result&&!result.noData&&(
               <div style={{background:C.card,border:`2px solid ${result.color}44`,borderRadius:16,padding:20}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                  <div><Tag color={result.color}>{result.label}</Tag><div style={{fontSize:26,fontWeight:900,marginTop:10,color:result.color}}>{result.diff>=0?"+":""}{result.diff}% vs market</div><div style={{fontSize:13,color:C.muted,marginTop:4}}>{result.summary}</div></div>
+                  <div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                      <Tag color={result.color}>{result.label}</Tag>
+                      {liveMarket?.found && <span style={{fontSize:10,background:C.green+"22",color:C.green,border:`1px solid ${C.green}44`,borderRadius:6,padding:"2px 8px",fontWeight:700}}>📡 LIVE · {liveMarket.count} listings</span>}
+                    </div>
+                    <div style={{fontSize:26,fontWeight:900,marginTop:10,color:result.color}}>{result.diff>=0?"+":""}{result.diff}% vs market</div></div><div style={{fontSize:13,color:C.muted,marginTop:4}}>{result.summary}</div></div>
                   <Gauge score={result.score} color={result.color}/>
                 </div>
                 <div style={{borderTop:`1px solid ${C.border}`,marginTop:16,paddingTop:16,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  {liveMarket?.found && (
+                    <div style={{background:C.green+"11",border:`1px solid ${C.green}33`,borderRadius:10,padding:"10px 12px",gridColumn:"1/-1",marginBottom:4}}>
+                      <div style={{fontSize:10,color:C.green,textTransform:"uppercase",letterSpacing:.8,fontWeight:700}}>Live Listing Range ({liveMarket.count} active)</div>
+                      <div style={{fontSize:13,fontWeight:700,marginTop:4,color:C.text}}>${liveMarket.low?.toLocaleString()} – ${liveMarket.high?.toLocaleString()} <span style={{color:C.muted,fontWeight:400}}>avg ${liveMarket.avg?.toLocaleString()}</span></div>
+                    </div>
+                  )}
                   {[["Fair Market Value",`$${result.fair.toLocaleString()}`],["Asking Price",`$${parseFloat(price.replace(/,/g,"")).toLocaleString()}`],["Difference",result.diff>=0?`Save $${Math.abs(result.fair-parseFloat(price.replace(/,/g,""))).toLocaleString()}`:`Over $${Math.abs(result.fair-parseFloat(price.replace(/,/g,""))).toLocaleString()}`],["YoY Trend",`▲ ${MARKET_DATA[vehicle]?.trend}%`]].map(([k,v])=>(
                     <div key={k} style={{background:C.surface,borderRadius:10,padding:"10px 12px"}}><div style={{fontSize:10,color:C.muted,textTransform:"uppercase",letterSpacing:.8}}>{k}</div><div style={{fontSize:14,fontWeight:700,marginTop:4}}>{v}</div></div>
                   ))}
