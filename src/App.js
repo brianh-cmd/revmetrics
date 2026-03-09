@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const SUPABASE_URL  = process.env.REACT_APP_SUPABASE_URL;
 const SUPABASE_ANON = process.env.REACT_APP_SUPABASE_ANON_KEY;
@@ -258,6 +258,103 @@ async function redirectToCheckout(priceId,email,refCode){
 function Tag({children,color}){return <span style={{background:color+"22",color,border:`1px solid ${color}44`,borderRadius:6,padding:"2px 10px",fontSize:12,fontWeight:700}}>{children}</span>;}
 function Inp({label,value,onChange,placeholder="",type="text",error=false}){return(<div style={{display:"flex",flexDirection:"column",gap:5}}>{label&&<label style={{fontSize:11,color:error?"#ff4444":C.muted,letterSpacing:1,textTransform:"uppercase"}}>{label}{error&&<span style={{marginLeft:4,fontSize:10}}>← Required</span>}</label>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{background:C.surface,border:`1px solid ${error?"#ff4444":C.border}`,borderRadius:10,color:C.text,padding:"12px 14px",fontSize:15,outline:"none",width:"100%",boxSizing:"border-box"}}/></div>);}
 function Sel({label,value,onChange,options,error=false}){return(<div style={{display:"flex",flexDirection:"column",gap:5}}>{label&&<label style={{fontSize:11,color:error?"#ff4444":C.muted,letterSpacing:1,textTransform:"uppercase"}}>{label}{error&&<span style={{marginLeft:4,fontSize:10}}>← Required</span>}</label>}<select value={value} onChange={e=>onChange(e.target.value)} style={{background:C.surface,border:`1px solid ${error?"#ff4444":C.border}`,borderRadius:10,color:value?C.text:C.muted,padding:"12px 14px",fontSize:15,outline:"none",width:"100%",appearance:"none",cursor:"pointer"}}><option value="" disabled>Select…</option>{options.map(o=><option key={o} value={o}>{o}</option>)}</select></div>);}
+
+function VehicleSearch({label, value, onChange, options, error=false}) {
+  const [query, setQuery] = React.useState(value || "");
+  const [open, setOpen] = React.useState(false);
+  const [highlighted, setHighlighted] = React.useState(0);
+  const ref = React.useRef(null);
+
+  const filtered = query.length < 1 ? [] : options.filter(o =>
+    o.toLowerCase().split(/\s+/).some(word => word.startsWith(query.toLowerCase())) ||
+    o.toLowerCase().includes(query.toLowerCase())
+  ).slice(0, 8);
+
+  React.useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function select(option) {
+    setQuery(option);
+    onChange(option);
+    setOpen(false);
+    setHighlighted(0);
+  }
+
+  function handleKey(e) {
+    if (!open || filtered.length === 0) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlighted(h => Math.min(h+1, filtered.length-1)); }
+    if (e.key === "ArrowUp")   { e.preventDefault(); setHighlighted(h => Math.max(h-1, 0)); }
+    if (e.key === "Enter")     { e.preventDefault(); select(filtered[highlighted]); }
+    if (e.key === "Escape")    { setOpen(false); }
+  }
+
+  function handleChange(e) {
+    const v = e.target.value;
+    setQuery(v);
+    setOpen(true);
+    setHighlighted(0);
+    if (v === "") onChange("");
+  }
+
+  return (
+    <div ref={ref} style={{display:"flex",flexDirection:"column",gap:5,position:"relative"}}>
+      {label && <label style={{fontSize:11,color:error?C.red:C.muted,letterSpacing:1,textTransform:"uppercase"}}>
+        {label}{error && <span style={{marginLeft:4,fontSize:10}}>← Required</span>}
+      </label>}
+      <div style={{position:"relative"}}>
+        <input
+          value={query}
+          onChange={handleChange}
+          onFocus={() => { if (query.length > 0) setOpen(true); }}
+          onKeyDown={handleKey}
+          placeholder="Type to search (e.g. Porsche, S2000...)"
+          autoComplete="off"
+          style={{background:C.surface,border:`1px solid ${error?C.red:open&&filtered.length>0?C.accent:C.border}`,
+            borderRadius:open&&filtered.length>0?"10px 10px 0 0":10,color:C.text,
+            padding:"12px 36px 12px 14px",fontSize:15,outline:"none",width:"100%",boxSizing:"border-box"}}
+        />
+        {query && (
+          <button onClick={()=>{setQuery("");onChange("");setOpen(false);}}
+            style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",
+              background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer",
+              lineHeight:1,padding:"0 2px"}}>×</button>
+        )}
+      </div>
+      {open && filtered.length > 0 && (
+        <div style={{position:"absolute",top:"100%",left:0,right:0,background:C.surface,
+          border:`1px solid ${C.accent}`,borderTop:"none",borderRadius:"0 0 10px 10px",
+          zIndex:100,maxHeight:280,overflowY:"auto"}}>
+          {filtered.map((o, i) => {
+            const lq = query.toLowerCase();
+            const lo = o.toLowerCase();
+            const idx = lo.indexOf(lq);
+            const before = idx >= 0 ? o.slice(0, idx) : o;
+            const match  = idx >= 0 ? o.slice(idx, idx + query.length) : "";
+            const after  = idx >= 0 ? o.slice(idx + query.length) : "";
+            return (
+              <div key={o} onMouseDown={()=>select(o)} onMouseEnter={()=>setHighlighted(i)}
+                style={{padding:"11px 14px",cursor:"pointer",fontSize:14,
+                  background:i===highlighted?C.accent+"22":"transparent",
+                  borderBottom:i<filtered.length-1?`1px solid ${C.border}`:"none",
+                  color:i===highlighted?C.accent:C.text}}>
+                {before}<strong style={{color:C.accent}}>{match}</strong>{after}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {value && query === value && (
+        <div style={{fontSize:11,color:C.green,marginTop:2}}>✓ {value}</div>
+      )}
+    </div>
+  );
+}
+
 function Btn({children,onClick,disabled,color=C.accent,style={}}){return(<button onClick={onClick} disabled={disabled} style={{background:color,color:C.bg,border:"none",borderRadius:12,padding:"14px",fontSize:14,fontWeight:800,cursor:disabled?"not-allowed":"pointer",opacity:disabled?.4:1,width:"100%",letterSpacing:.5,...style}}>{children}</button>);}
 function Gauge({score,color}){const r=54,cx=70,cy=70,circ=Math.PI*r,fill=(score/100)*circ;return(<svg width="140" height="80" viewBox="0 0 140 80"><path d={`M ${cx-r},${cy} A ${r},${r} 0 0,1 ${cx+r},${cy}`} fill="none" stroke={C.border} strokeWidth="10"/><path d={`M ${cx-r},${cy} A ${r},${r} 0 0,1 ${cx+r},${cy}`} fill="none" stroke={color} strokeWidth="10" strokeDasharray={`${fill} ${circ}`} strokeLinecap="round" style={{transition:"stroke-dasharray 0.8s ease"}}/><text x={cx} y={cy-8} textAnchor="middle" fill={color} fontSize="22" fontWeight="800">{score}</text><text x={cx} y={cy+2} textAnchor="middle" fill={C.muted} fontSize="9">/100</text></svg>);}
 
@@ -393,7 +490,7 @@ function App({session}){
         {tab==="scorer"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div><h2 style={{margin:0,fontSize:20,fontWeight:800}}>Deal Scorer</h2><p style={{margin:"4px 0 0",fontSize:13,color:C.muted}}>Instant market intelligence on any listing.</p></div>
-            <Sel label="Vehicle" value={vehicle} onChange={v=>{setVeh(v);setResult(null);}} options={Object.keys(MARKET_DATA)}/>
+            <VehicleSearch label="Vehicle" value={vehicle} onChange={v=>{setVeh(v);setResult(null);}} options={Object.keys(MARKET_DATA)} error={scorerSubmitted&&!vehicle}/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}><Inp label="Year" value={year} onChange={setYear} placeholder="2004"/><Inp label="Asking Price ($)" value={price} onChange={setPrice} placeholder="28000"/></div>
             <Sel label="Condition" value={condition} onChange={setCond} options={CONDITIONS}/>
             <Sel label="Mileage" value={mileage} onChange={setMile} options={MILE_BRACKETS}/>
@@ -436,7 +533,7 @@ function App({session}){
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
               <div style={{fontSize:12,color:C.accent,fontWeight:700,marginBottom:12}}>+ Submit a Transaction</div>
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                <Sel label="Vehicle" value={compForm.vehicle} onChange={v=>setCF(p=>({...p,vehicle:v}))} options={Object.keys(MARKET_DATA)}/>
+                <VehicleSearch label="Vehicle" value={compForm.vehicle} onChange={v=>setCF(p=>({...p,vehicle:v}))} options={Object.keys(MARKET_DATA)}/>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><Inp label="Year" value={compForm.year} onChange={v=>setCF(p=>({...p,year:v}))} placeholder="2004"/><Inp label="Sale Price" value={compForm.price} onChange={v=>setCF(p=>({...p,price:v}))} placeholder="28500"/></div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><Sel label="Condition" value={compForm.condition} onChange={v=>setCF(p=>({...p,condition:v}))} options={CONDITIONS}/><Sel label="Mileage" value={compForm.mileage} onChange={v=>setCF(p=>({...p,mileage:v}))} options={MILE_BRACKETS}/></div>
                 <Inp label="State" value={compForm.location} onChange={v=>setCF(p=>({...p,location:v}))} placeholder="CA"/>
